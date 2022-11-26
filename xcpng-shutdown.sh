@@ -29,7 +29,7 @@ main () {
 	xen_slave_timeout=240
 
 	# Log file location
-	log_file="/var/log/xcpng-shutdown.sh.log"
+	log_file="/var/log/xcpng-shutdown.log"
 
 	log_date "==============================================================================="
 	log_date "Powerdown event recieved from NUT master, initiating shutdown proceedure"

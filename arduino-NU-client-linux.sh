@@ -1,10 +1,15 @@
 #!/bin/bash
 
-# IP address of the arduino UPS monitor server
-arduinoUpsMonitor=10.2.2.120:80/timeOffline
+# Usage arduino-NU-client-linux.sh <ip_address_to_arduinoNU_server> <seconds_offline_before_shutdown>
 
-# time in seconds ups needs to be offline before a shutdown occurs
-timeOfflineToShutdown=30
+# Set the ip address as the first passed argument.
+arduinoNUIP=$1
+
+# set time offline to shutdown equal to second passed argument
+timeOfflineToShutdown=$2
+
+# IP address of the arduino UPS monitor server
+arduinoUpsMonitor=$arduinoNUIP/timeOffline
 
 timeOffline=`curl -sL --connect-timeout 15 $arduinoUpsMonitor`
 
@@ -24,7 +29,6 @@ elif [ $timeOffline -eq 0 ]; then
 else
 
 	# Tell user status could not be detected
-
 	echo Arduino NU status could not be determined
 
 fi
