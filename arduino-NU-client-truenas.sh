@@ -17,7 +17,6 @@ if [ $timeOffline -ge $timeOfflineToShutdown ]; then
 elif [ $timeOffline -ge 1 ]; then
     echo Arduino NU has reported UPS is offline for $timeOffline seconds
     echo System will shutdown after Arduino NU reports offline for $timeOfflineToShutdown seconds
-    curl -d " " https://hassio.mariotech.net/api/webhook/power-outage-notification-r6kQEuueiAYPemRCWdGFlFNK
 
 elif [ $timeOffline -eq 0 ]; then
     echo Arduino NU has reported UPS is online

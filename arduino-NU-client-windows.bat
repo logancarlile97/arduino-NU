@@ -21,7 +21,6 @@ if %response% GEQ %timeToShutdown% (
 ) else if %response% GTR 0 (
     echo Arduino NU reports offline for %response% seconds
     echo This system will shut down after Arduino NU reports offline for %timeToShutdown%
-    curl.exe -d " " https://hassio.mariotech.net/api/webhook/power-outage-notification-r6kQEuueiAYPemRCWdGFlFNK
     
 ) else (
     echo Arduino NU reports online
