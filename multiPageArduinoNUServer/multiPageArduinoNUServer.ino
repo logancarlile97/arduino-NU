@@ -37,6 +37,7 @@ File webPage;
 
 //Variables for Arduino NU UPS Monitor
 bool upsOnline = true; //True when ups sensor shows online
+bool newlyOffline = false; //Use to detect if ups has newly switched to offline. Used for adding to event count.
 unsigned long lastOnline = 0; //Time the ups was last online
 unsigned long maxOfflineTime = 480000; //Max time in milliseconds ups can report offline before changing status to shutdown
 unsigned int events = 0; //Holds how many times ups has gone offline
@@ -54,7 +55,11 @@ void ISR_upsStatusChange(){
     digitalWrite(yellowLED, HIGH);
     digitalWrite(greenLED, LOW);
     digitalWrite(redLED, LOW);
-    events += 1;
+    newlyOffline = true;
+    
+    //events += 1;
+    //Wait 100 milliseconds to prevent multiple events from low voltage.
+    //delay(100);
   }
 
   //if ups is online set status leds
@@ -221,28 +226,48 @@ void loop() {
     w.serveUrl("/eventCount", eventCountPage);
     w.serveUrl("/timeSinceOnline", timeSinceOnlinePage);
     w.serveUrl("/timeOffline", timeOfflinePage);
+    w.serveUrl("/resetEventCount", resetEventCountPage);
+  }
+
+  //Detect if we need to add to event count
+  if (newlyOffline) {
+    events += 1;
+    //Wait 5 seconds before reseting the newlyOffline flag
+    delay(5000);
+    newlyOffline = false;
   }
 }
 
 void rootPage(EasyWebServer &w){
   w.client.println(F("<!DOCTYPE html>"));
   w.client.println(F("<html lang=\"en\">"));
-  w.client.println(F("  <head>"));
-  w.client.println(F("    <meta charset=\"utf-8\" />"));
-  w.client.println(F("    <title>Arduino NU Server</title>"));
-  w.client.println(F("  </head>"));
-  w.client.println(F("  <body style=\"background-color: black;\">"));
-  w.client.println(F("    <h1 style=\"color: green;\">Arduino NU Server</h1>"));
-  w.client.println(F("    <p style=\"color: limegreen;\">UPS Status: "));
-  w.client.println(         getUpsStatus());
-  w.client.println(F("    </p>"));
-  w.client.println(F("    <p style=\"color: limegreen;\">Time Since Last Online:"));
-  w.client.println(         getTimeSinceOnline());
-  w.client.println(F("    </p>"));
-  w.client.println(F("    <p style=\"color: limegreen;\">Event Count: "));
-  w.client.println(         getEventCount());
-  w.client.println(F("    </p>"));
-  w.client.println(F("  </body>"));
+  w.client.println(F("<head>"));
+  w.client.println(F("<meta charset=\"utf-8\" />"));
+  w.client.println(F("<title>Arduino NU Server</title>"));
+  w.client.println(F("</head>"));
+  w.client.println(F("<div class=\"content\">"));
+  w.client.println(F("<body style=\"background-color: black;\">"));
+  w.client.println(F("<h1>Arduino NU Server</h1>"));
+  w.client.println(F("<p>UPS Status: "));
+  w.client.println(getUpsStatus());
+  w.client.println(F("</p>"));
+  w.client.println(F("<p>Time Since Last Online:"));
+  w.client.println(getTimeSinceOnline());
+  w.client.println(F("</p>"));
+  w.client.println(F("<p>Event Count: "));
+  w.client.println(getEventCount());
+  w.client.println(F("</p>"));
+  w.client.println(F("</body>"));
+  w.client.println(F("</div>"));
+  w.client.println(F("<style>"));
+  w.client.println(F(".content {"));
+  w.client.println(F("margin-left: auto;"));
+  w.client.println(F("margin-right: auto;"));
+  w.client.println(F("text-align: center;"));
+  w.client.println(F("color: green;}"));
+  w.client.println(F("h1{ font-size: 50px;}"));
+  w.client.println(F("p { font-size: 20px;}"));
+  w.client.println(F("</style>"));
   w.client.println(F("</html>"));
 }
 
@@ -260,4 +285,9 @@ void timeSinceOnlinePage (EasyWebServer &w){
 
 void timeOfflinePage (EasyWebServer &w){
   w.client.print(getTimeOffline());
+}
+
+void resetEventCountPage (EasyWebServer &w){
+  events = 0;
+  w.client.print("event count has been reset");
 }
